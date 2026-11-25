@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wi-Fi Smart Coverage · Une onde et un mur</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <img class="logo" src="logo.jpg" alt="Routeur Wi-Fi" width="56" height="56">
+  <div class="id">
+    <h1>Wi-Fi Smart Coverage</h1>
+    <p class="sous">Simulation et optimisation de la couverture Wi-Fi dans un bâtiment</p>
+    <p class="auteurs">Réalisé par <strong>Hasnaoui Soundos</strong> et <strong>Jaoudi Nada</strong></p>
+  </div>
+  <nav class="nav" aria-label="Pages">
+    <a href="index.html" aria-current="page">1. Une onde et un mur</a>
+    <a href="couverture.html">2. Le bâtiment</a>
+  </nav>
+</header>
+
+<main class="app">
+
+  <!-- ===== COMMANDES ===== -->
+  <aside class="controls" aria-label="Paramètres">
+    <h2>Onde</h2>
+
+    <label for="freq">Fréquence <output id="freqVal">5.0 GHz</output></label>
+    <input type="range" id="freq" min="2" max="7" step="0.1" value="5">
+    <div class="chips" id="freqChips">
+      <button data-f="2.4">2,4 GHz</button>
+      <button data-f="5">5 GHz</button>
+      <button data-f="6">6 GHz</button>
+    </div>
+    <p class="hint" id="lambdaInfo"></p>
+
+    <label for="angle">Angle d'incidence <output id="angleVal">20°</output></label>
+    <input type="range" id="angle" min="0" max="89" step="1" value="20">
+    <p class="hint">0° = le signal arrive perpendiculairement au mur.</p>
+
+    <span class="lbl">Polarisation</span>
+    <div class="seg" id="polSeg">
+      <button data-p="TE" class="on">TE</button>
+      <button data-p="TM">TM</button>
+      <button data-p="AVG">Moyenne</button>
+    </div>
+
+    <h2>Mur (couches)</h2>
+
+    <div class="chips" id="presets">
+      <button data-s="beton">Béton</button>
+      <button data-s="vitrage">Double vitrage</button>
+      <button data-s="cloison">Cloison</button>
+    </div>
+    <ul id="layers" class="layers"></ul>
+    <button id="addLayer" class="add">+ Ajouter une couche</button>
+
+    <label for="mat">Couche choisie : matériau</label>
+    <select id="mat"></select>
+
+    <label for="thick">Épaisseur <output id="thickVal">20 cm</output></label>
+    <input type="range" id="thick" min="0.1" max="40" step="0.1" value="20">
+    <p class="hint">Tu peux aussi glisser la poignée blanche sur la couche, dans le schéma.</p>
+
+    <h2>Réception</h2>
+
+    <label for="dist">Distance routeur → téléphone <output id="distVal">8 m</output></label>
+    <input type="range" id="dist" min="1" max="30" step="1" value="8">
+
+    <button id="playBtn" class="play">Pause</button>
+    <button id="pngBtn" class="png">Exporter en PNG</button>
+  </aside>
+
+  <!-- ===== SCÈNE ===== -->
+  <section class="stage">
+    <div class="topchips">
+      <span id="chipF"></span><span id="chipP"></span>
+      <span class="rt r">R <b id="chipR"></b></span><span class="rt t">T <b id="chipT"></b></span>
+    </div>
+    <canvas id="scene" width="900" height="480" aria-label="Schéma de l'onde qui rencontre le mur"></canvas>
+
+    <div class="chartbox">
+      <h3>R / T selon l'angle d'incidence <button id="csvBtn" class="csv">CSV</button></h3>
+      <p class="hint">Clique ou glisse sur la courbe pour changer l'angle.</p>
+      <canvas id="chart" width="900" height="260" aria-label="Courbes de réflexion et de transmission selon l'angle"></canvas>
+    </div>
+
+    <div class="chartbox">
+      <h3>Profil du champ |E(z)|
+        <span class="seg small" id="champSeg"><button data-m="lin" class="on">Lin</button><button data-m="db">dB</button></span>
+        <button id="csvChamp" class="csv">CSV</button></h3>
+      <p class="hint">Champ tangentiel normalisé à l'onde incidente, avant, dans et après le mur.</p>
+      <canvas id="champ" width="900" height="270" aria-label="Profil du champ électrique à travers le mur"></canvas>
+    </div>
+  </section>
+
+  <!-- ===== RÉSULTATS ===== -->
+  <aside class="results" aria-label="Résultats">
+    <h2>Où va l'énergie ?</h2>
+
+    <div class="gauges">
+      <div class="gauge refl" id="gR"><div><strong id="rVal">0 %</strong><span>Réfléchie</span></div></div>
+      <div class="gauge trans" id="gT"><div><strong id="tVal">0 %</strong><span>Transmise</span></div></div>
+    </div>
+    <div class="stat abs"><span>Absorbée par le mur</span><strong id="aVal">0 %</strong></div>
+
+    <div class="budget" aria-hidden="true">
+      <i id="bR"></i><i id="bA"></i><i id="bT"></i>
+    </div>
+    <p class="hint">Réfléchie + absorbée + transmise = 100 %</p>
+
+    <h2>Signal reçu</h2>
+    <div class="rssi">
+      <div><span>Sans mur</span><strong id="dbmFree">—</strong></div>
+      <div><span>Avec le mur</span><strong id="dbmWall">—</strong></div>
+    </div>
+    <p class="verdict" id="verdict"></p>
+    <p class="hint" id="lossInfo"></p>
+
+    <details>
+      <summary>Comment c'est calculé ?</summary>
+      <p>Le mur est une plaque plane homogène. On applique les formules de Fresnel à chaque face et on additionne les allers-retours de l'onde dans le mur (formule d'Airy).</p>
+      <p>Les valeurs de permittivité et de conductivité viennent de la recommandation UIT-R P.2040. Ce sont des ordres de grandeur : un vrai mur est plus complexe (armatures, vide, humidité).</p>
+      <p>Le niveau reçu part d'un routeur de 20 dBm, avec la perte en espace libre sur la distance choisie.</p>
+    </details>
+  </aside>
+
+</main>
+
+<script src="physique.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

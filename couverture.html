@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wi-Fi Smart Coverage · Le bâtiment</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <img class="logo" src="logo.jpg" alt="Routeur Wi-Fi" width="56" height="56">
+  <div class="id">
+    <h1>Wi-Fi Smart Coverage</h1>
+    <p class="sous">Simulation et optimisation de la couverture Wi-Fi dans un bâtiment</p>
+    <p class="auteurs">Réalisé par <strong>Hasnaoui Soundos</strong> et <strong>Jaoudi Nada</strong></p>
+  </div>
+  <nav class="nav" aria-label="Pages">
+    <a href="index.html">1. Une onde et un mur</a>
+    <a href="couverture.html" aria-current="page">2. Le bâtiment</a>
+  </nav>
+</header>
+
+<main class="app">
+  <aside class="controls" aria-label="Paramètres">
+    <h2>Onde</h2>
+    <label for="freq">Fréquence <output id="freqVal">5,0 GHz</output></label>
+    <input type="range" id="freq" min="2" max="7" step="0.1" value="5">
+    <div class="chips" id="chips">
+      <button data-f="2.4">2,4 GHz</button><button data-f="5">5 GHz</button><button data-f="6">6 GHz</button>
+    </div>
+    <label for="pt">Puissance du routeur <output id="ptVal">9 dBm</output></label>
+    <input type="range" id="pt" min="0" max="23" step="1" value="9">
+
+    <h2>Murs intérieurs</h2>
+    <label for="mat">Matériau</label>
+    <select id="mat"></select>
+    <label for="thick">Épaisseur <output id="thickVal">12 cm</output></label>
+    <input type="range" id="thick" min="1" max="40" step="0.5" value="12">
+
+    <h2>Taille des salles</h2>
+    <label for="w1">Mur de gauche <output id="w1Val">5,0 m</output></label>
+    <input type="range" id="w1" min="3.2" max="6.8" step="0.1" value="5">
+    <label for="w2">Mur de droite <output id="w2Val">10,0 m</output></label>
+    <input type="range" id="w2" min="8.2" max="11.2" step="0.1" value="10">
+    <p class="hint">Déplace les murs pour agrandir ou réduire les salles. Change le type d'une salle à droite : les tables, les personnes et le signal changent.</p>
+  </aside>
+
+  <section class="stage">
+    <div class="vuebar">
+      <div class="seg" id="vueSeg"><button data-v="3d" class="on">Vue 3D</button><button data-v="2d">Plan 2D · carte dBm</button></div>
+      <label class="chk"><input type="checkbox" id="sol" checked> Couverture au sol</label>
+    </div>
+    <canvas id="cv3" width="900" height="640" aria-label="Vue 3D du bâtiment avec les ondes Wi-Fi"></canvas>
+    <canvas id="cv" width="740" height="540" hidden aria-label="Plan du bâtiment avec carte de puissance Wi-Fi"></canvas>
+    <p class="hint" id="aide3">Glisse la vue pour la tourner. Glisse le routeur pour le déplacer. Clique sur une salle pour la choisir.</p>
+  </section>
+
+  <aside class="results" aria-label="Résultats">
+    <h2>Couverture du bâtiment</h2>
+    <div class="stat trans"><span>Surface bien couverte (≥ −67 dBm)</span><strong id="couv">0 %</strong></div>
+    <ul class="leg" id="leg"></ul>
+
+    <h2>Salle choisie</h2>
+    <p class="nomsalle" id="selNom"></p>
+    <label for="typeSel">Type de salle</label>
+    <select id="typeSel"></select>
+    <p class="verdict" id="selDbm"></p>
+    <p class="hint">Niveau au centre de la salle. Les tables et le comptoir ajoutent 1 à 3 dB de perte.</p>
+
+    <details>
+      <summary>Comment c'est calculé ?</summary>
+      <p>En chaque point : puissance du routeur, moins la perte en espace libre, moins les pertes des murs traversés (réflexion et absorption, même calcul que la page 1), moins une petite perte par meuble traversé.</p>
+      <p>Les portes laissent passer le signal. Le sol et le plafond ne sont pas modélisés.</p>
+    </details>
+  </aside>
+</main>
+
+<script src="physique.js"></script>
+<script src="couverture.js"></script>
+</body>
+</html>
